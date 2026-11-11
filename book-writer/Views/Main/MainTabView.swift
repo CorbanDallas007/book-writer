@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct MainTabView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     @State private var bookTreeVM: BookTreeViewModel?
     @State private var notesVM: NotesViewModel?

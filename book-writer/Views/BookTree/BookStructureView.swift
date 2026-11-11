@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BookStructureView: View {
     @ObservedObject var viewModel: BookTreeViewModel
+    @Environment(\.colorScheme) private var colorScheme
     @State private var newChapterName: String = ""
     @State private var showingAddChapterAlert: Bool = false
 
@@ -23,7 +24,7 @@ struct BookStructureView: View {
                                 Text(note.processingStyle)
                                     .font(.caption2)
                                     .padding(4)
-                                    .background(Color.blue.opacity(0.1))
+                                    .background(colorScheme == .dark ? Color.blue.opacity(0.2) : Color.blue.opacity(0.1))
                                     .cornerRadius(4)
                             }
                         }
