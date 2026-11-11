@@ -1,0 +1,24 @@
+﻿# Android build outputs
+/*.apk
+/*.aab
+/build/
+*.gradle.caches/
+
+# Proguard
+proguard-rules.pro
+
+# Local configuration file (not checked in)
+local.properties
+
+# .idea/
+.idea/
+
+# .cline/
+.cline/
+
+# android/ folder
+android/
+
+# .zip files
+*.zip
+
