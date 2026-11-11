@@ -4,6 +4,9 @@
 /build/
 *.gradle.caches/
 
+# Binary files
+*.bin
+
 # Proguard
 proguard-rules.pro
 
