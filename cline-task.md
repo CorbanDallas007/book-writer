@@ -151,4 +151,49 @@ book-writer/
   - **Экран «Лор»:** Таблица, куда можно добавлять имена персонажей (например, ввести "элронд"), чтобы локальный веб-скрипт заменял строчные буквы на заглавные при обработке текста.
   - **Локальное хранение:** Привяжи сохранение всех заметок, глав и лора к браузерному `localStorage`. При перезагрузке страницы на ПК данные книги не должны пропадать.
 
+## 📦 ШАГ 6: КОНФИГУРАЦИЯ СБОРКИ И ЭКСПОРТ В IPA (ДЛЯ УСТАНОВКИ НА IOS)
+
+Чтобы проект можно было скомпилировать в установочный файл `.ipa` для тестирования на реальном iPhone, выполни следующие настройки автоматизации:
+
+### 1. Создание конфигурации Xcode проекта (`project.pbxproj`)
+- Сгенерируй базовую конфигурацию проекта со следующими параметрами:
+  - `PRODUCT_BUNDLE_IDENTIFIER = "com.yourname.book-writer"`
+  - `IPHONEOS_DEPLOYMENT_TARGET = 17.0`
+  - `DEVELOPMENT_TEAM = ""` (оставь пустым для автоматической подписи пользователем).
+- **Важно:** Добавь в файл `Info.plist` обязательные ключи разрешений для безопасности iOS, без которых приложение мгновенно вылетит при старте:
+  - `NSMicrophoneUsageDescription` = "Приложению нужен доступ к микрофону для начитывания книги."
+  - `NSSpeechRecognitionUsageDescription` = "Приложению нужно разрешение на распознавание речи для превращения голоса в текст."
+
+### 2. Скрипт автоматической сборки (`build_ipa.sh`)
+Создай в корне проекта bash-скрипт `build_ipa.sh` для компиляции приложения в архив и упаковки в `.ipa` через консоль:
+```bash
+#!/bin/bash
+# 1. Очистка старой сборки
+xcodebuild clean -project book-writer.xcodeproj -scheme book-writer
+
+# 2. Архивация проекта
+xcodebuild archive -project book-writer.xcodeproj -scheme book-writer -archivePath ./build/book-writer.xcarchive -allowProvisioningUpdates
+
+# 3. Экспорт в IPA (требует базовый ExportOptions.plist)
+xcodebuild -exportArchive -archivePath ./build/book-writer.xcarchive -exportPath ./build/ipa -exportOptionsPlist ExportOptions.plist
+```
+
+### 3. Файл настроек экспорта (`ExportOptions.plist`)
+Создай файл `ExportOptions.plist` со следующим содержимым:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>development</string>
+    <key>signingStyle</key>
+    <string>automatic</string>
+    <key>compileBitcode</key>
+    <false/>
+</dict>
+</plist>
+```
+
+
 
