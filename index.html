@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>book-writer — Веб-симулятор</title>
+    <style id="app-styles">
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f7; color: #1d1d1f; line-height: 1.5; }
+.iphone-frame { max-width: 390px; margin: 0 auto; min-height: 100vh; background-color: #ffffff; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; }
+.navbar { background-color: #ffffff; border-bottom: 1px solid #d1d1d6; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+.navbar h1 { font-size: 17px; font-weight: 600; color: #000000; }
+.navbar button { background: none; border: none; color: #007aff; font-size: 17px; font-weight: 500; cursor: pointer; padding: 8px 16px; }
+.tab-bar { display: flex; border-top: 1px solid #d1d1d6; background-color: #f5f5f7; }
+.tab-bar button { flex: 1; padding: 12px; background: none; border: none; font-size: 12px; font-weight: 500; color: #8e8e93; cursor: pointer; position: relative; }
+.tab-bar button.active { color: #007aff; }
+.tab-bar button.active::after { content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 20px; height: 6px; background-color: #007aff; border-radius: 3px; }
+.tab-content { display: none; padding: 16px; overflow-y: auto; flex: 1; }
+.tab-content.active { display: block; }
+.record-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.transcribed-text { width: 100%; min-height: 200px; background-color: #f2f2f7; border-radius: 12px; padding: 16px; font-size: 16px; color: #1d1d1f; margin-bottom: 24px; text-align: left; overflow-wrap: break-word; }
+.mic-button { width: 100px; height: 100px; background-color: #007aff; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 12px rgba(0,122,255,0.4); transition: transform 0.1s; margin-bottom: 16px; }
+.mic-button:active { transform: scale(0.95); }
+.mic-button.recording { background-color: #ff3b30; box-shadow: 0 4px 12px rgba(255,59,48,0.6); animation: pulse 1.5s infinite; }
+.mic-icon { font-size: 36px; color: #ffffff; }
+.mic-status { margin-top: 8px; font-size: 14px; font-weight: 500; color: #007aff; }
+.mic-button.recording .mic-status { color: #ff3b30; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,59,48,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,59,48,0); } 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0); } }
+.sound-wave { display: flex; align-items: center; justify-content: center; gap: 4px; height: 40px; margin-top: 16px; }
+.wave-bar { width: 4px; background-color: #007aff; border-radius: 2px; animation: wave 1.2s infinite ease-in-out; }
+.mic-button.recording .wave-bar { background-color: #ff3b30; }
+.wave-bar:nth-child(1) { animation-delay: 0s; height: 20%; }
+.wave-bar:nth-child(2) { animation-delay: 0.15s; height: 40%; }
+.wave-bar:nth-child(3) { animation-delay: 0.3s; height: 60%; }
+.wave-bar:nth-child(4) { animation-delay: 0.45s; height: 80%; }
+.wave-bar:nth-child(5) { animation-delay: 0.6s; height: 100%; }
+.wave-bar:nth-child(6) { animation-delay: 0.75s; height: 60%; }
+.wave-bar:nth-child(7) { animation-delay: 0.9s; height: 40%; }
+@keyframes wave { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.5); } }
+.demo-btn { background-color: #f2f2f7; border: 1px solid #d1d1d6; border-radius: 8px; padding: 10px 20px; font-size: 14px; color: #007aff; cursor: pointer; margin-top: 16px; }
+.demo-btn:active { background-color: #e5e5ea; }
+.save-btn { background-color: #34c759; color: #ffffff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 16px; }
+.save-btn:disabled { background-color: #999999; cursor: not-allowed; }
+.error-msg { color: #ff3b30; font-size: 13px; margin-top: 8px; }
+.book-screen { display: flex; flex-direction: column; }
+.chapter-item { background-color: #ffffff; border: 1px solid #d1d1d6; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+.chapter-header { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background-color: #f2f2f7; }
+.chapter-header h3 { font-size: 16px; font-weight: 600; }
+.chapter-order { font-size: 12px; color: #8e8e93; }
+.chapter-content { padding: 12px 16px; display: none; }
+.chapter-content.expanded { display: block; }
+.note-item { background-color: #f2f2f7; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 14px; }
+.note-title { font-weight: 600; margin-bottom: 4px; }
+.note-date { font-size: 11px; color: #8e8e93; }
+.add-chapter-form { background-color: #ffffff; padding: 16px; border-top: 1px solid #d1d1d6; }
+.add-chapter-form input { width: 100%; padding: 10px; border: 1px solid #d1d1d6; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+.lore-screen { display: flex; flex-direction: column; }
+.lore-item { background-color: #ffffff; border: 1px solid #d1d1d6; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.lore-keyword { font-weight: 600; font-size: 16px; }
+.lore-details { font-size: 13px; color: #8e8e93; margin-top: 4px; }
+.add-lore-form { background-color: #ffffff; padding: 16px; border-top: 1px solid #d1d1d6; display: flex; flex-direction: column; gap: 10px; }
+.add-lore-form input, .add-lore-form textarea { padding: 10px; border: 1px solid #d1d1d6; border-radius: 8px; font-size: 14px; }
+.add-lore-form textarea { resize: vertical; min-height: 60px; }
+.btn-primary { background-color: #007aff; color: #ffffff; border: none; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.btn-primary:active { background-color: #005bb5; }
+.btn-delete { color: #ff3b30; font-size: 14px; background: none; border: none; cursor: pointer; }
+.empty-state { text-align: center; color: #8e8e93; padding: 40px 16px; }
+.debug-btn { position: absolute; top: 10px; right: 10px; background: #d1d1d6; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; cursor: pointer; }
+.debug-btn:active { background: #bcbcbc; }
+</style>
+</head>
+<body>
+    <div class="iphone-frame">
+        <div class="navbar">
+            <h1 id="screen-title">book-writer</h1>
+            <button class="debug-btn" id="debug-btn" style="display: none;">Тестовая БД</button>
+        </div>
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="record">Запись</button>
+            <button class="tab-btn" data-tab="book">Книга</button>
+            <button class="tab-btn" data-tab="lore">Лор</button>
+        </div>
+        <div id="tab-record" class="tab-content active">
+            <div class="record-screen">
+                <div class="transcribed-text" id="transcribed-text">Готов к записи...</div>
+                <div class="mic-button" id="mic-button" onclick="toggleRecording()">
+                    <div class="mic-icon" id="mic-icon">🎤</div>
+                    <div class="mic-status" id="mic-status">Готово</div>
+                </div>
+                <div class="sound-wave" id="sound-wave" style="display: none;">
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                    <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                </div>
+                <button class="demo-btn" id="demo-btn" onclick="simulateDemoInput()">Демо-начитка</button>
+                <div id="error-msg" class="error-msg"></div>
+                <button class="save-btn" id="save-btn" onclick="saveNote()" disabled>Сохранить заметку</button>
+            </div>
+        </div>
+        <div id="tab-book" class="tab-content">
+            <div class="book-screen">
+                <div id="book-tree"></div>
+                <div class="add-chapter-form">
+                    <input type="text" id="new-chapter-name" placeholder="Название новой главы">
+                    <button class="btn-primary" onclick="addChapter()">Добавить главу</button>
+                </div>
+            </div>
+        </div>
+        <div id="tab-lore" class="tab-content">
+            <div class="lore-screen">
+                <div id="lore-list"></div>
+                <div class="add-lore-form">
+                    <input type="text" id="new-lore-keyword" placeholder="Имя персонажа или локации">
+                    <textarea id="new-lore-details" placeholder="Описание (опционально)"></textarea>
+                    <button class="btn-primary" onclick="addLore()">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script id="app-script">
+const STORAGE_KEYS = { NOTES: 'bw_notes', CHAPTERS: 'bw_chapters', LORE: 'bw_lore' };
+function loadFromStorage(key, defaultValue = []) { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : defaultValue; } catch (e) { return defaultValue; } }
+function saveToStorage(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+let notes = loadFromStorage(STORAGE_KEYS.NOTES, []);
+let chapters = loadFromStorage(STORAGE_KEYS.CHAPTERS, []);
+let lore = loadFromStorage(STORAGE_KEYS.LORE, []);
+const FILLER_WORDS = new Set(['ну', 'короче', 'типа', 'в общем', 'как бы']);
+function cleanText(text, context, style) {
+    let result = text.split(/\s+/).filter(w => { const t = w.replace(/[.,!?;:()«»"']/g,'').toLowerCase(); return !FILLER_WORDS.has(t); }).join(' ');
+    for (const entry of context) { const re = new RegExp(`\\b${entry.keyword.toLowerCase()}\\b`, 'gi'); result = result.replace(re, entry.keyword); }
+    result = result.replace(/([.!?]\s*)([a-zа-яё])/gi, (m, s, l) => s + l.toUpperCase());
+    if (result.length > 0) result = result.charAt(0).toUpperCase() + result.slice(1);
+    if (style === 'draft') { const s = result.split(/[.!?]+/).filter(x => x.trim().length > 0); return s.map(x => '• ' + x.trim()).join('\n'); }
+    return result;
+}
+let isRecording = false;
+let waveAnimationId = null;
+let demoTimer = null;
+const micButton = document.getElementById('mic-button');
+const micIcon = document.getElementById('mic-icon');
+const micStatus = document.getElementById('mic-status');
+const transcribedText = document.getElementById('transcribed-text');
+const soundWave = document.getElementById('sound-wave');
+const saveBtn = document.getElementById('save-btn');
+const errorMsg = document.getElementById('error-msg');
+const demoBtn = document.getElementById('demo-btn');
+function toggleRecording() { if (!isRecording) startRecording(); else stopRecording(); }
+function startRecording() {
+    isRecording = true; micButton.classList.add('recording'); micIcon.textContent = '⏹'; micStatus.textContent = 'Запись...';
+    soundWave.style.display = 'flex'; saveBtn.disabled = true; errorMsg.textContent = ''; animateWave();
+}
+function stopRecording() {
+    isRecording = false; micButton.classList.remove('recording'); micIcon.textContent = '🎤'; micStatus.textContent = 'Готово';
+    soundWave.style.display = 'none'; cancelAnimationFrame(waveAnimationId);
+    saveBtn.disabled = transcribedText.textContent.trim() === '' || transcribedText.textContent === 'Готов к записи...';
+}
+function animateWave() {
+    if (!isRecording) return;
+    const bars = soundWave.querySelectorAll('.wave-bar');
+    bars.forEach((bar) => { const h = Math.floor(Math.random() * 90) + 10; bar.style.height = h + '%'; });
+    waveAnimationId = requestAnimationFrame(animateWave);
+}
+function simulateDemoInput() {
+    const demoText = "ну короче ГГ зашел в таверну типа Таинственный Дракон и там сидел этот как бы эльф Элронд";
+    const words = demoText.split(' '); let index = 0; transcribedText.textContent = '';
+    demoTimer = setInterval(() => {
+        if (index < words.length) {
+            const word = words[index];
+            transcribedText.textContent = transcribedText.textContent ? transcribedText.textContent + ' ' + word : word;
+            index++; saveBtn.disabled = false;
+        } else { clearInterval(demoTimer); demoTimer = null; }
+    }, 500);
+}
+function saveNote() {
+    const raw = transcribedText.textContent.trim();
+    if (!raw || raw === 'Готов к записи...') return;
+    const style = 'literal'; const corrected = cleanText(raw, lore, style);
+    console.log('Очистка текста:'); console.log('Было:', raw); console.log('Стало:', corrected);
+    const note = { id: Date.now().toString(), title: 'Запись ' + new Date().toLocaleString('ru-RU', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }), rawText: raw, correctedText: corrected, createdAt: new Date().toISOString(), chapterId: null, processingStyle: style };
+    notes.push(note); saveToStorage(STORAGE_KEYS.NOTES, notes);
+    transcribedText.textContent = 'Готов к записи...'; saveBtn.disabled = true; stopRecording(); alert('Заметка сохранена!');
+}
+function renderBookTree() {
+    const container = document.getElementById('book-tree');
+    const sortedChapters = [...chapters].sort((a, b) => a.order - b.order);
+    if (sortedChapters.length === 0) { container.innerHTML = '<div class="empty-state">Глав пока нет. Добавьте первую главу.</div>'; return; }
+    let html = '';
+    sortedChapters.forEach((chapter, ci) => {
+        const chapterNotes = notes.filter(n => n.chapterId === chapter.id);
+        const isExpanded = chapter._expanded !== false;
+        html += `<div class="chapter-item"><div class="chapter-header" onclick="toggleChapter(${ci})"><h3>${escapeHtml(chapter.name)}</h3><span class="chapter-order">#${chapter.order}</span><span style="font-size: 20px;">${isExpanded ? '▼' : '▶'}</span></div><div class="chapter-content ${isExpanded ? 'expanded' : ''}" id="chapter-content-${ci}">`;
+        if (chapterNotes.length === 0) { html += '<div class="empty-state" style="padding: 12px;">Заметок нет</div>'; }
+        else { chapterNotes.forEach(n => { html += `<div class="note-item"><div class="note-title">${escapeHtml(n.title)}</div><div style="font-size: 13px; color: #666;">${escapeHtml(n.rawText.substring(0, 80))}${n.rawText.length > 80 ? '...' : ''}</div><div class="note-date">${new Date(n.createdAt).toLocaleString('ru-RU')} (${n.processingStyle === 'literal' ? 'литературный' : n.processingStyle === 'verbatim' ? 'дословно' : 'черновик'})</div></div>`; }); }
+        html += `</div></div>`;
+    });
+    container.innerHTML = html;
+}
+function toggleChapter(index) {
+    const sortedChapters = [...chapters].sort((a, b) => a.order - b.order);
+    const chapter = sortedChapters[index]; chapter._expanded = chapter._expanded !== false; renderBookTree();
+}
+function addChapter() {
+    const input = document.getElementById('new-chapter-name'); const name = input.value.trim();
+    if (!name) return;
+    chapters.push({ id: Date.now().toString(), name: name, order: chapters.length + 1, _expanded: true });
+    saveToStorage(STORAGE_KEYS.CHAPTERS, chapters); input.value = ''; renderBookTree();
+}
+function renderLore() {
+    const container = document.getElementById('lore-list');
+    if (lore.length === 0) { container.innerHTML = '<div class="empty-state">Лор пуст. Добавьте имена персонажей и локации.</div>'; return; }
+    let html = '';
+    lore.forEach(entry => { html += `<div class="lore-item"><div><div class="lore-keyword">${escapeHtml(entry.keyword)}</div>${entry.details ? `<div class="lore-details">${escapeHtml(entry.details)}</div>` : ''}</div><button class="btn-delete" onclick="deleteLore('${entry.id}')">Удалить</button></div>`; });
+    container.innerHTML = html;
+}
+function addLore() {
+    const keywordInput = document.getElementById('new-lore-keyword'); const detailsInput = document.getElementById('new-lore-details');
+    const keyword = keywordInput.value.trim(); const details = detailsInput.value.trim();
+    if (!keyword) return;
+    lore.push({ id: Date.now().toString(), keyword: keyword, details: details });
+    saveToStorage(STORAGE_KEYS.LORE, lore); keywordInput.value = ''; detailsInput.value = ''; renderLore();
+}
+function deleteLore(id) { lore = lore.filter(e => e.id !== id); saveToStorage(STORAGE_KEYS.LORE, lore); renderLore(); }
+function generateTestData() {
+    const testChapters = [ { name: 'Глава 1. Пролог', order: 1 }, { name: 'Глава 2. Встреча', order: 2 }, { name: 'Глава 3. Побег', order: 3 } ];
+    testChapters.forEach((c, i) => { chapters.push({ id: 'test_chapter_' + i, name: c.name, order: c.order, _expanded: true }); });
+    lore.push({ id: 'test_lore_1', keyword: 'Элронд', details: 'Персонаж, эльф' }, { id: 'test_lore_2', keyword: 'Таинственный Дракон', details: 'Локация, таверна' });
+    saveToStorage(STORAGE_KEYS.CHAPTERS, chapters); saveToStorage(STORAGE_KEYS.LORE, lore);
+    renderBookTree(); renderLore(); alert('Тестовая БД сгенерирована!');
+}
+document.getElementById('debug-btn').style.display = 'block';
+document.getElementById('debug-btn').addEventListener('click', generateTestData);
+const tabBtns = document.querySelectorAll('.tab-btn'); const tabContents = document.querySelectorAll('.tab-content');
+tabBtns.forEach(btn => { btn.addEventListener('click', () => { const tabId = btn.getAttribute('data-tab'); tabBtns.forEach(b => b.classList.remove('active')); tabContents.forEach(c => c.classList.remove('active')); btn.classList.add('active'); document.getElementById('tab-' + tabId).classList.add('active'); if (tabId === 'book') renderBookTree(); if (tabId === 'lore') renderLore(); }); });
+function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+renderBookTree(); renderLore();
+</script>
+</body>
+</html>
