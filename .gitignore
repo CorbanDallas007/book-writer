@@ -16,9 +16,6 @@ local.properties
 # .cline/
 .cline/
 
-# android/ folder
-android/
-
 # .zip files
 *.zip
 

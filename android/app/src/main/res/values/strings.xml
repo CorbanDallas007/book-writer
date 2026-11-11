@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">book-writer</string>
+    <string name="tab_record">Запись</string>
+    <string name="tab_book">Книга</string>
+    <string name="tab_lore">Лор</string>
+    <string name="ready_to_record">Готов к записи…</string>
+    <string name="recording">Запись…</string>
+    <string name="demo_input">Демо-ввод</string>
+    <string name="save_note">Сохранить заметку</string>
+    <string name="no_access">Нет доступа</string>
+    <string name="permission_message">Приложению необходим доступ к микрофону и распознаванию речи для работы диктовки.</string>
+    <string name="book_tree">Дерево глав</string>
+    <string name="add_chapter">Добавить главу</string>
+    <string name="chapter_name_hint">Название новой главы</string>
+    <string name="create">Создать</string>
+    <string name="cancel">Отмена</string>
+    <string name="lore_book">Лор книги</string>
+    <string name="add_lore">Добавить</string>
+    <string name="delete">Удалить</string>
+    <string name="lore_keyword_hint">Имя персонажа или локации</string>
+    <string name="lore_details_hint">Описание (опционально)</string>
+    <string name="processing_style">Стиль обработки</string>
+    <string name="style_literal">Литературный</string>
+    <string name="style_verbatim">Дословно</string>
+    <string name="style_draft">Черновик</string>
+    <string name="view_mode">Режим просмотра</string>
+    <string name="mode_corrected">Исправлено ИИ</string>
+    <string name="mode_original">Оригинал</string>
+    <string name="link_chapter">Привязать к главе / Стили</string>
+    <string name="no_chapters">Глав пока нет. Добавьте первую главу.</string>
+    <string name="no_notes">Заметок нет</string>
+    <string name="no_lore">Лор пуст. Добавьте имена персонажей и локации.</string>
+    <string name="test_db">Тестовая БД</string>
+    <string name="test_db_generated">Тестовая БД сгенерирована!</string>
+</resources>
