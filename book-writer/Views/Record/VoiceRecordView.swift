@@ -2,6 +2,7 @@ import SwiftUI
 
 struct VoiceRecordView: View {
     @ObservedObject var viewModel: AudioRecorderViewModel
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showingPermissionsAlert: Bool = false
     @State private var showSaveButton: Bool = false
 
@@ -17,7 +18,7 @@ struct VoiceRecordView: View {
                         .padding()
                 }
                 .frame(maxHeight: 300)
-                .background(Color(.systemGray6))
+                .background(colorScheme == .dark ? Color(.systemGray5).opacity(0.3) : Color(.systemGray6))
                 .cornerRadius(12)
                 .padding(.horizontal)
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct StyleSelectorView: View {
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var selectedStyle: String
 
     private let styles: [(key: String, title: String)] = [

@@ -5,6 +5,7 @@ struct NoteEditorView: View {
     let note: Note
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var showOriginal: Bool = false
     @State private var showStyleSelector: Bool = false
@@ -25,6 +26,8 @@ struct NoteEditorView: View {
                 TextEditor(text: bindingText)
                     .font(.body)
                     .padding()
+                    .background(colorScheme == .dark ? Color(.systemGray5).opacity(0.3) : Color(.systemGray6))
+                    .cornerRadius(8)
 
                 // StyleSelectorView
                 if showStyleSelector {
