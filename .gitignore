@@ -7,6 +7,13 @@
 # Binary files
 *.bin
 
+# Build artifacts (root level)
+build_dry.txt
+build_log.txt
+build_out.txt
+build_out2.txt
+build_result.txt
+
 # Proguard
 proguard-rules.pro
 
