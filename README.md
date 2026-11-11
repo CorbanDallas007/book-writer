@@ -24,7 +24,8 @@
 
 * **Язык разработки:** Swift 5.10+
 * **Интерфейс:** SwiftUI (Современная декларативная верстка)
-* **База данных:** SwiftData (Локальное реактивное хранение данных, iOS 17+)
+* **Нативная библиотека (Android):** Whisper.cpp via JNI + CMake/NDK
+* **Нативная библиотека (Android):** Whisper.cpp via JNI + CMake/NDK
 * **Транскрибация речи:** `SFSpeechRecognizer` (Локальный движок Apple с поддержкой Apple Neural Engine)
 * **Лингвистический анализ:** `NaturalLanguage` Framework (`NLTagger`, `NLTokenizer`)
 
@@ -34,7 +35,7 @@
 
 ```text
 book-writer/
-└── book-writer/
+└── android/              # Android проект (C++ Whisper integration)
     ├── App/            # Точка входа в приложение и инициализация SwiftData
     ├── Models/         # Модели данных (Заметки, Структура книги, Лор/Персонажи)
     ├── Services/       # Бизнес-логика (Сервис диктовки и локальный движок очистки текста)

@@ -17,7 +17,7 @@ class WhisperASRService(context: Context) {
 
     private val TAG = "WhisperASRService"
 
-    // Whisper model path in assets
+    // Whisper model path in assets (copied to internal storage at runtime)
     private var modelPath: String? = null
     private var whisperCtx: Any? = null
 
@@ -25,13 +25,14 @@ class WhisperASRService(context: Context) {
     private val sampleRate = 16000
     private val channelCount = 1
     private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+    private val bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO, audioFormat)
 
     init {
         // Copy Whisper model to persistent location if not exists
         modelPath = copyModelFromAssets(context)
     }
 
-    /** Initialize Whisper model from assets */
+    /** Initialize Whisper model from assets path via JNI */
     @SuppressLint("MissingPermission")
     fun initializeModel(): Boolean {
         if (whisperCtx != null) {
@@ -46,9 +47,12 @@ class WhisperASRService(context: Context) {
         try {
             // Load native Whisper JNI library
             System.loadLibrary("whisper_jni")
-            // In a full implementation, would call JNI function to initialize model
-            // e.g., whisperCtx = WhisperJNI.initModel(modelPath!!)
-            whisperCtx = "initialized"  // Placeholder
+            // Call JNI function to initialize model from file path
+            whisperCtx = WhisperJNI_initModel(modelPath!!)
+            if (whisperCtx == null) {
+                Log.e(TAG, "Failed to initialize Whisper model")
+                return false
+            }
             Log.i(TAG, "Whisper model initialized successfully")
             return true
         } catch (e: Exception) {
@@ -68,21 +72,18 @@ class WhisperASRService(context: Context) {
 
         // Convert short PCM to float for Whisper (-1.0 to 1.0 range)
         val floatData = audioData.map { it / 32768f }
-        // In full implementation, call: WhisperJNI.recognize(whisperCtx, floatData, sampleRate)
-        // For now, return processed text using local service
-        return processTextLocally(floatData)
-    }
 
-    /** Process text using local NaturalLanguage backend */
-    private fun processTextLocally(audioData: FloatArray): String {
-        // Use TextProcessingService logic for now as placeholder
-        // In full implementation, would call native Whisper API
-        return "Речь распознана успешно"
+        // Call JNI function to recognize speech
+        val result = WhisperJNI_recognize(whisperCtx, floatData, sampleRate)
+        return result
     }
 
     /** Free Whisper model resources */
     fun freeModel() {
-        whisperCtx = null
+        if (whisperCtx != null) {
+            WhisperJNI_freeModel(whisperCtx)
+            whisperCtx = null
+        }
         Log.i(TAG, "Whisper model freed")
     }
 
@@ -114,4 +115,14 @@ class WhisperASRService(context: Context) {
             return null
         }
     }
+
+    // Native JNI interface methods
+    @SuppressLint("Jni")
+    private native static long WhisperJNI_initModel(String modelPath);
+
+    @SuppressLint("Jni")
+    private native static String WhisperJNI_recognize(long ctx, float[] audioData, int sampleRate);
+
+    @SuppressLint("Jni")
+    private native static void WhisperJNI_freeModel(long ctx);
 }
