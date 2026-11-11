@@ -23,9 +23,6 @@ local.properties
 # .idea/
 .idea/
 
-# .cline/
-.cline/
-
 # .zip files
 *.zip
 
