@@ -24,7 +24,7 @@ set(
     SOURCE_FILES
     ${WHISPER_LIB_DIR}/src/whisper.cpp
     ${WHISPER_LIB_DIR}/src/aneforge/whisper-aneforge.cpp
-    ${CMAKE_SOURCE_DIR}/jni.c
+    ${CMAKE_SOURCE_DIR}/whisper_jni.cpp
 )
 
 find_library(LOG_LIB log)
@@ -70,6 +70,13 @@ function(build_library target_name)
 
 endfunction()
 
+include_directories(${WHISPER_LIB_DIR})
+include_directories(${WHISPER_LIB_DIR}/src)
+include_directories(${WHISPER_LIB_DIR}/include)
+include_directories(${WHISPER_LIB_DIR}/ggml/include)
+include_directories(${WHISPER_LIB_DIR}/ggml/src)
+include_directories(${WHISPER_LIB_DIR}/ggml/src/ggml-cpu)
+
 if (${ANDROID_ABI} STREQUAL "arm64-v8a")
     build_library("whisper_v8fp16_va")
 elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
@@ -77,10 +84,3 @@ elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
 endif ()
 
 build_library("whisper") # Default target
-
-include_directories(${WHISPER_LIB_DIR})
-include_directories(${WHISPER_LIB_DIR}/src)
-include_directories(${WHISPER_LIB_DIR}/include)
-include_directories(${WHISPER_LIB_DIR}/ggml/include)
-include_directories(${WHISPER_LIB_DIR}/ggml/src)
-include_directories(${WHISPER_LIB_DIR}/ggml/src/ggml-cpu)

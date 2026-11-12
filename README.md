@@ -8,7 +8,7 @@
 
 ## 🔥 Ключевые возможности (Killer-Features)
 
-1. **Автономная ИИ-диктовка (Whisper):** Распознавание речи происходит прямо на процессоре смартфона благодаря встроенной нейросети `whisper.cpp`.
+1. **Автономная ИИ-диктовка (Whisper):** Распознавание речи происходит прямо на процессоре смартфона благодаря встроенной нейросети `whisper.cpp`, скомпилированной через CMake и Android NDK. Связь между Kotlin и C++ реализована через JNI-мост (`whisper_jni.cpp`), модель `ggml-tiny.bin` копируется из `assets` во внутреннее хранилище при первом запуске.
 2. **Умный офлайн-редактор и автопунктуация:** Нейросеть автоматически расставляет знаки препинания (точки, запятые, вопросительные знаки) и заглавные буквы на основе контекста, очищая текст от слов-паразитов.
 3. **Локальный словарь Лора (Книга Памяти):** Вы можете внести в базу имена персонажей или названия вымышленных локаций. Локальный движок сверяется с ними, чтобы не коверкать специфические термины вашей книги при транскрибации.
 4. **Стилистические режимы обработки:**
@@ -24,9 +24,11 @@
 
 * **Язык разработки:** Kotlin & C++ (JNI)
 * **Интерфейс:** Jetpack Compose (Material Design 3)
-* **Архитектура:** MVVM (ViewModel + StateFlow)
-* **Локальный ИИ-движок:** `whisper.cpp` (компиляция через CMake и Android NDK)
-* **Аудиозахват:** Нативный Android `AudioRecord` (PCM 16kHz, 16-bit, Mono)
+* **Архитектура:** MVVM (ViewModel + StateFlow) + JNI-мост для нативного кода
+* **Локальный ИИ-движок:** `whisper.cpp` (компиляция через CMake и Android NDK, сборка `libwhisper.so`)
+* **JNI-мост:** `whisper_jni.cpp` — функции `initModel`, `recognize`, `freeModel` для связи Kotlin ↔ C++
+* **Аудиозахват:** Нативный Android `AudioRecord` (PCM 16kHz, 16-bit, Mono), конвертация в `FloatArray` (-1.0…1.0)
+* **Модель:** `ggml-tiny.bin` (копируется из `assets` в `context.filesDir` при инициализации)
 
 ---
 
@@ -40,7 +42,10 @@ book-writer/
     └── app/
         └── src/main/
             ├── assets/   # Веса локальной модели нейросети (ggml-tiny.bin, не индексируется в Git)
-            ├── cpp/      # Нативный движок whisper.cpp, CMakeLists.txt и JNI-мост
+            ├── cpp/      # Нативный движок whisper.cpp, CMakeLists.txt, whisper_jni.cpp (JNI-мост)
+            │   ├── whisper_src/   # Исходники whisper.cpp и ggml
+            │   ├── whisper_jni.cpp # JNI-обертка (initModel, recognize, freeModel)
+            │   └── CMakeLists.txt # Сборка libwhisper.so через CMake + NDK
             └── java/     # Kotlin код (UI на Compose, ViewModels, сервисы аудио и БД)
 ```
 
@@ -62,15 +67,17 @@ book-writer/
 ### Как собрать APK локально:
 1. Склонируйте репозиторий:
    ```bash
-   git clone https://github.com
+   git clone https://github.com/CorbanDallas007/book-writer.git
    ```
-2. Поместите файл модели `ggml-tiny.bin` в директорию `android/app/src/main/assets/`.
-3. Перейдите в папку `android` и запустите сборку через Gradle:
+2. Убедитесь, что файл модели `ggml-tiny.bin` находится в директории `android/app/src/main/assets/`.
+3. Установите Android SDK и NDK (пути указываются в `local.properties`).
+4. Перейдите в папку `android` и запустите сборку через Gradle:
    ```bash
    cd android
    .\gradlew.bat assembleDebug
    ```
-4. Готовый файл появится по пути: `android/app/build/outputs/apk/debug/app-debug.apk`.
+   Сборка автоматически скомпилирует C++ исходники `whisper.cpp` и `whisper_jni.cpp` через CMake в `libwhisper.so`.
+5. Готовый файл появится по пути: `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ---
 
