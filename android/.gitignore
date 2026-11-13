@@ -1,0 +1,37 @@
+# Android build outputs
+/*.apk
+/*.aab
+/build/
+*.gradle.caches/
+
+# Binary files
+*.bin
+
+# Build artifacts
+build.log
+build_dry.txt
+build_log.txt
+build_out.txt
+build_out2.txt
+build_result.txt
+
+# Proguard
+proguard-rules.pro
+
+# Local configuration file (not checked in)
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# Other
+*.zip
+*.log
+
+# NDK/CMake build outputs
+android/app/build/
+android/app/src/main/cpp/build/
+
+# Local Whisper model in internal storage (not in Git)
+android/app/src/main/assets/ggml-tiny.bin
