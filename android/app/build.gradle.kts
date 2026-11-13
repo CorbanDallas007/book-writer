@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application") version "8.2.0"
+    id("org.jetbrains.kotlin.android") version "1.9.22"
 }
 
 android {
@@ -89,6 +89,8 @@ dependencies {
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.androidx.hilt.navigation.compose)
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockitoKotlin)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.espresso.core)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

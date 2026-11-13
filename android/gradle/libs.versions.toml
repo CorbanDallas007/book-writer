@@ -16,8 +16,8 @@ espressoCore = "3.5.1"
 composeUiTestJunit4 = "1.6.3"
 
 [plugins]
-android.application = { id = "com.android.application", version.ref = "agp" }
-kotlin.android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

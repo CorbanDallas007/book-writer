@@ -1,82 +1,136 @@
 package com.bookwriter.service
 
 import com.bookwriter.model.StoryContext
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.runners.MockitoJUnitRunner
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-@RunWith(MockitoJUnitRunner::class)
 class TextProcessingServiceTest {
 
-    private lateinit var service: TextProcessingService
+    private val service = TextProcessingService()
 
-    @Mock
-    lateinit var context: StoryContext
-
-    @Before
-    fun setUp() {
-        MockitoAnnotations.openMocks(this)
-        service = TextProcessingService()
-    }
+    private val loreContext = listOf(
+        StoryContext(keyword = "Элронд", details = "Персонаж, эльф"),
+        StoryContext(keyword = "Таинственный Дракон", details = "Локация, таверна")
+    )
 
     @Test
-    fun `removeFillerWords_removes_common_russian_fillers`() {
+    fun cleanText_removesFillerWords() {
         // Arrange
-        val text = "ну короче ГГ зашел в типи таверне типа"
+        val text = "ну короче ГГ зашел в таверну типа"
 
         // Act
-        val result = service.removeFillerWords(text)
+        val result = service.cleanText(text, emptyList(), "literal")
 
         // Assert
-        // "ну", "короче", "типа" should be removed
-        assert(result !contains "ну")
-        assert(result !contains "короче")
-        assert(result !contains "типа")
-        assert(result.contains("ГГ"))
-        assert(result.contains("таверне"))
+        assertTrue("Should remove 'ну'", !result.contains(" ну ") && !result.startsWith("ну "))
+        assertTrue("Should remove 'короче'", !result.contains(" короче "))
+        assertTrue("Should remove 'типа'", !result.contains(" типа "))
+        assertTrue("Should keep 'ГГ'", result.contains("ГГ"))
+        assertTrue("Should keep 'таверну'", result.contains("таверну"))
     }
 
     @Test
-    fun `fixProperNames_replaces_lore_keywords`() {
+    fun cleanText_fixesProperNamesFromLore() {
         // Arrange
-        val text = "элронд и таинственный дракон"
-        val context = StoryContext(keyword = "элронд", details = "Персонаж, эльф")
+        val text = "элронд зашел в таинственный дракон"
 
         // Act
-        val result = service.fixProperNames(text, listOf(context))
+        val result = service.cleanText(text, loreContext, "literal")
 
         // Assert
-        assert(result.contains("Элронд"))
-        assert(!result.contains("элронд")) // Should be capitalized
+        assertTrue("Should capitalize 'Элронд'", result.contains("Элронд"))
+        assertTrue("Should not contain lowercase 'элронд'", !result.contains("элронд"))
+        assertTrue("Should capitalize 'Таинственный Дракон'", result.contains("Таинственный Дракон"))
     }
 
     @Test
-    fun `fixSentenceCapping_capitalizes_first_letter`() {
+    fun cleanText_fixesSentenceCasing() {
         // Arrange
-        val text = "привет мир. как дела?"
+        val text = "привет мир. как дела? хорошо."
 
         // Act
-        val result = service.fixSentenceCasing(text)
+        val result = service.cleanText(text, emptyList(), "literal")
 
         // Assert
-        assert(result.startsWith("Привет"))
-        assert(result.contains("Как")) // After question mark
+        assertTrue("Should capitalize first letter", result.startsWith("Привет"))
+        assertTrue("Should capitalize after period", result.contains(" Как"))
+        assertTrue("Should capitalize after question mark", result.contains(" Хорошо"))
     }
 
     @Test
-    fun `formatAsDraft_formats_with_bullets`() {
+    fun cleanText_literalStyle_returnsProcessedText() {
+        // Arrange
+        val text = "ну привет мир."
+
+        // Act
+        val result = service.cleanText(text, emptyList(), "literal")
+
+        // Assert
+        assertEquals("Привет мир.", result)
+    }
+
+    @Test
+    fun cleanText_verbatimStyle_returnsProcessedText() {
+        // Arrange
+        val text = "ну привет мир."
+
+        // Act
+        val result = service.cleanText(text, emptyList(), "verbatim")
+
+        // Assert
+        assertEquals("Привет мир.", result)
+    }
+
+    @Test
+    fun cleanText_draftStyle_formatsWithBullets() {
         // Arrange
         val text = "Первое предложение. Второе предложение."
 
         // Act
-        val result = service.formatAsDraft(text)
+        val result = service.cleanText(text, emptyList(), "draft")
 
         // Assert
-        assert(result.startsWith("• "))
-        assert(result.contains("• Второе"))
+        assertTrue("Should start with bullet", result.startsWith("• "))
+        assertTrue("Should contain second bullet", result.contains("• Второе"))
+        assertTrue("Should have newline between bullets", result.contains("\n"))
+    }
+
+    @Test
+    fun cleanText_emptyText_returnsEmpty() {
+        // Arrange
+        val text = ""
+
+        // Act
+        val result = service.cleanText(text, emptyList(), "literal")
+
+        // Assert
+        assertEquals("", result)
+    }
+
+    @Test
+    fun cleanText_unknownStyle_returnsProcessedText() {
+        // Arrange
+        val text = "ну привет мир."
+
+        // Act
+        val result = service.cleanText(text, emptyList(), "unknown")
+
+        // Assert
+        assertEquals("Привет мир.", result)
+    }
+
+    @Test
+    fun cleanText_combinedAllFeatures() {
+        // Arrange
+        val text = "ну элронд зашел в таинственный дракон. типа это было круто."
+
+        // Act
+        val result = service.cleanText(text, loreContext, "draft")
+
+        // Assert
+        assertTrue("Should remove filler words", !result.contains("ну") && !result.contains("типа"))
+        assertTrue("Should fix proper names", result.contains("Элронд") && result.contains("Таинственный Дракон"))
+        assertTrue("Should format as draft with bullets", result.contains("•"))
     }
 }
